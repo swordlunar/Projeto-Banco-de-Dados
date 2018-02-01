@@ -181,18 +181,18 @@ def cadastrar_funcionario():
     try:
 
         comand = """
-                INSERT INTO funcionarios (cpf_fun, rg_fun, crm, cargo, cofen,
+                INSERT INTO funcionario (cpf_fun, rg_fun, crm, cargo, cofen,
                     nome_fuc, hora_plant, end_log_fun, end_num_fun,
                     end_bairro_fun, end_cidade_fun, end_cep_fun, end_uf_fun,
-                    end_comp, tel1_fun, tel2_fun) VALUES (%d, %d, %d, %s, %d,
-                    %s, %s, %s, %d, %s, %s, %s, %s, %s, %d, %d)
-                )
+                    end_comp, tel1_fun, tel2_fun) VALUES (%s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
         cur = con.cursor()
-        cur.execute(comand, (cpf, rg, crm, cargo, cofen, nome, datetime.datetime.now(), logradouro, numero,
-                             bairro, cidade, cep, uf, complemeto, tel1, tel2,))
+        cur.execute(comand, ((cpf,), (rg,), (crm,), (cargo,), (cofen,), (nome,), (datetime.datetime.now(),), (logradouro,), (numero,),
+                             (bairro,), (cidade,), (cep,), (uf,), (complemeto,), (tel1,), (tel2,),))
+        con = commit()
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -224,12 +224,13 @@ def cadastrar_paciente():
             INSERT INTO paciente (id_pac, nome_pac, sexo_pac,tipo_sag, cofen,
                 nome_fuc, hora_plant, end_log_fun, end_num_fun,
                 end_bairro_fun, end_cidade_fun, end_cep_fun, end_uf_fun,
-                end_comp, tel1_fun, tel2_fun) VALUES (%d, %d, %d, %s, %d, %s,%s,%s,%d,%s,%s,%s,%s,%s,%d,%d )
+                end_comp, tel1_fun, tel2_fun) VALUES (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s )
             )
         """
 
+
 if __name__ == "__main__":
-    # create_tables()
+    create_tables()
     cadastrar_funcionario()
 
 
