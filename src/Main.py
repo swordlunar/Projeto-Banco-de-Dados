@@ -20,6 +20,7 @@ def create_tables():
                 end_cidade_pac VARCHAR(255) NOT NULL,
                 end_cep_pac VARCHAR(11) NOT NULL,
                 end_uf_pac VARCHAR(2) NOT NULL,
+                end_comp_pac VARCHAR,
                 tel1_pac VARCHAR(15) NOT NULL,
                 tel2_pac VARCHAR(15),
                 email_pac VARCHAR(100) NOT NULL,
@@ -30,7 +31,8 @@ def create_tables():
                 observacao VARCHAR NOT NULL,
                 proce VARCHAR NOT NULL,
                 pront SERIAL NOT NULL UNIQUE,
-                ult_con INTEGER UNIQUE                                                     
+                ult_con INTEGER UNIQUE 
+                                                                    
             );
             """,
             """
@@ -67,9 +69,9 @@ def create_tables():
                 id_fun SERIAL PRIMARY KEY UNIQUE,
                 cpf_fun INTEGER NOT NULL UNIQUE,
                 rg_fun INTEGER NOT NULL,
-                crm INTEGER,
+                crm INTEGER DEFAULT '-1',
                 cargo VARCHAR(15), 
-                cofen INTEGER,
+                cofen INTEGER DEFAULT '-1',
                 nome_fuc VARCHAR NOT NULL,
                 hora_plant INTEGER NOT NULL,
                 end_log_fun VARCHAR(255) NOT NULL,
@@ -149,7 +151,7 @@ def create_tables():
             """
         )
 
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
         cur = con.cursor()
         for c in commands:
             cur.execute(c)
@@ -190,12 +192,14 @@ def cadastrar_funcionario():
 
         con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
         cur = con.cursor()
-        cur.execute(comand, ((cpf,), (rg,), (crm,), (cargo,), (cofen,), (nome,), (datetime.datetime.now(),), (logradouro,), (numero,),
+        cur.execute(comand, ((cpf,), (rg,), (crm,), (cargo,), (cofen,), (nome,), (horasplatao,), (logradouro,), (numero,),
                              (bairro,), (cidade,), (cep,), (uf,), (complemeto,), (tel1,), (tel2,),))
-        con = commit()
+        con.commit()
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
+
+
 
 def cadastrar_paciente():
     nome = input("Digite o nome: ")
@@ -212,26 +216,39 @@ def cadastrar_paciente():
     fichas_anestesicas = input("Digite as fichas anestésicas: ")
     boletim_medico = input("Digite o boletim médico do paciente: ")
     procedimentos = input ("Digite os procedimentos a serem realizados no paciente: ")
-    lagradouro = input("Digite a rua: ")
+    logradouro = input("Digite o logradouro: ")
     bairro = input("Digite o bairro: ")
     numero = input("Digite o numero: ")
     cidade = input("Digite a cidade: ")
     cep = input("Digite o cep: ")
     uf = input("Digite o estado: ")
     complemeto = input("Digite o complemento (opcional): ")
+    ultima_consulta = input ("Digite o número da última consulta realizada por este paciente: ")
 
-    comand = """
-            INSERT INTO paciente (id_pac, nome_pac, sexo_pac,tipo_sag, cofen,
-                nome_fuc, hora_plant, end_log_fun, end_num_fun,
-                end_bairro_fun, end_cidade_fun, end_cep_fun, end_uf_fun,
-                end_comp, tel1_fun, tel2_fun) VALUES (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s )
-            )
-        """
+    try:
+        comand = """
+            INSERT INTO paciente (nome_pac, sexo_pac,tipo_sag, cpf_pac,
+                rg_pac, end_log_pac, end_num_pac, end_bairro_pac,
+                end_cidade_pac, end_cep_pac, end_uf_pac, end_comp_pac, tel1_pac, tel2_pac, email_pac,
+                boletim, presc, fixas_ane, desc_cir, observacao, proce, ult_con) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+        cur = con.cursor()
+        cur.execute(comand, ((nome,), (sexo,), (tipo_sanquineo,), (cpf,), (rg,), (logradouro,), (numero,), (bairro,), (cidade,),
+                         (cep,), (uf,),(complemeto,),(tel1,), (tel2,), (email,), (boletim_medico,), (prescricoes_medicas,),(fichas_anestesicas,),(descricoes_cirurgicas,),(observacoes,),(procedimentos,),(ultima_consulta,),))
+        con.commit()
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
 
 
 if __name__ == "__main__":
-    create_tables()
-    cadastrar_funcionario()
+    #create_tables()
+    #cadastrar_funcionario()
+    cadastrar_paciente()
+
 
 
 
