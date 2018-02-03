@@ -163,14 +163,25 @@ def create_tables():
 
 
 def cadastrar_funcionario():
+    print("Escolha o cargo:\n1- Médico\n2- Enfermeiro\n3- Secretário")
+    opcao = input()
+    if opcao is "1":
+        cargo = "médico"
+    elif opcao is "2":
+        cargo = "enfermeiro"
+    else:
+        cargo = "secretário"
+    crm = cofen = None
+
     nome = input("Digite o nome: ")
     rg = input("Digite o rg: ")
     cpf = input("Digite o cpf: ")
-    cargo = input("Digite o cargo: ")
     tel1 = input("Digite o telefone: ")
     tel2 = input("Digite outro telefone (opcional): ")
-    crm = input("Digite o CRM (médico): ")
-    cofen = input("Digite o COFEN (enfermeiro): ")
+    if cargo is "médico":
+        crm = input("Digite o CRM (médico): ")
+    if cargo is "enfermeiro":
+        cofen = input("Digite o COFEN (enfermeiro): ")
     horasplatao = input("Digite tempo de plantão: ")
     logradouro = input("Digite a rua: ")
     bairro = input("Digite o bairro: ")
@@ -178,22 +189,27 @@ def cadastrar_funcionario():
     cidade = input("Digite a cidade: ")
     cep = input("Digite o cep: ")
     uf = input("Digite o estado: ")
-    complemeto = input("Digite o complemento (opcional): ")
+    complemento = input("Digite o complemento (opcional): ")
+
+    if tel2 is "":
+        tel2 = None
+    if complemento is "":
+        complemento = None
 
     try:
 
-        comand = """
+        comand ="""
                 INSERT INTO funcionario (cpf_fun, rg_fun, crm, cargo, cofen,
                     nome_fuc, hora_plant, end_log_fun, end_num_fun,
                     end_bairro_fun, end_cidade_fun, end_cep_fun, end_uf_fun,
                     end_comp, tel1_fun, tel2_fun) VALUES (%s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                """
 
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
         cur = con.cursor()
-        cur.execute(comand, ((cpf,), (rg,), (crm,), (cargo,), (cofen,), (nome,), (horasplatao,), (logradouro,), (numero,),
-                             (bairro,), (cidade,), (cep,), (uf,), (complemeto,), (tel1,), (tel2,),))
+        cur.execute(comand, (cpf, rg, crm, cargo, cofen, nome, horasplatao, logradouro, numero,
+                             bairro, cidade, cep, uf, complemento, tel1, tel2,))
         con.commit()
 
     except (Exception, psycopg2.DatabaseError) as error:
@@ -243,11 +259,31 @@ def cadastrar_paciente():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
 
+def encontrar_funcionario():
+    print("Você deseja buscar por:\n1- Nome\n2- CPF\n3- RG\n")
+    comand = """SELECT * FROM funcionario;"""
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+    cur = con.cursor()
+    cur.execute(comand)
+    r = cur.fetchone()
+    cur.close()
+    print(r)
+
+def menu():    
+    print("Você deseja:\n1 - Cadastrar paciênte\n2 - Cadastrar funcionário\n3 - Buscar funcionário")
+    opcao = input()
+    if opcao is "1":
+        cadastrar_paciente()
+    elif opcao is "2":
+        cadastrar_funcionario()
+    else:
+        encontrar_funcionario()
 
 if __name__ == "__main__":
     #create_tables()
     #cadastrar_funcionario()
-    cadastrar_paciente()
+    #cadastrar_paciente()
+	menu()
 
 
 
