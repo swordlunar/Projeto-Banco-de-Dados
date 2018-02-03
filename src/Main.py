@@ -206,7 +206,7 @@ def cadastrar_funcionario():
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                 """
 
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
         cur = con.cursor()
         cur.execute(comand, (cpf, rg, crm, cargo, cofen, nome, horasplatao, logradouro, numero,
                              bairro, cidade, cep, uf, complemento, tel1, tel2,))
@@ -246,18 +246,58 @@ def cadastrar_paciente():
             INSERT INTO paciente (nome_pac, sexo_pac,tipo_sag, cpf_pac,
                 rg_pac, end_log_pac, end_num_pac, end_bairro_pac,
                 end_cidade_pac, end_cep_pac, end_uf_pac, end_comp_pac, tel1_pac, tel2_pac, email_pac,
-                boletim, presc, fixas_ane, desc_cir, observacao, proce, ult_con) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                boletim, presc, fixas_ane, desc_cir, observacao, proce) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
         con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
         cur = con.cursor()
         cur.execute(comand, ((nome,), (sexo,), (tipo_sanquineo,), (cpf,), (rg,), (logradouro,), (numero,), (bairro,), (cidade,),
-                         (cep,), (uf,),(complemeto,),(tel1,), (tel2,), (email,), (boletim_medico,), (prescricoes_medicas,),(fichas_anestesicas,),(descricoes_cirurgicas,),(observacoes,),(procedimentos,),(ultima_consulta,),))
+                         (cep,), (uf,),(complemeto,),(tel1,), (tel2,), (email,), (boletim_medico,), (prescricoes_medicas,),(fichas_anestesicas,),(descricoes_cirurgicas,),(observacoes,),(procedimentos,),))
         con.commit()
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
+
+def cadastrar_consulta():
+    id_paciente = input ("Digite o ID do paciente: ")
+    id_funcionario = input ("Digite o seu ID: ")
+    sintomas = input ("Digite os sintomas do paciente: ")
+    diagnostico = input ("Digite o diagnostico do paciente: ")
+
+    comand = """
+            INSERT INTO consulta (id_pac, id_fun, data_con, sint, diag) VALUES
+            (%s, %s, %s, %s, %s)
+            
+            """
+
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+    cur = con.cursor()
+    cur.execute(comand,
+                ((id_paciente,), (id_funcionario,),(datetime.datetime.now()),(sintomas,), (diagnostico,),))
+    con.commit()
+
+
+def cadastrar_internacao():
+    num_leito = input("Digite o número do leito: ")
+    id_consulta = input("Digite o ID da cosulta: ")
+    dias_perm = input("Digite os dias que ele permanecerá: ")
+    diagnostico_ini = input("Digite o diagnostico inicial do paciente: ")
+    diagnostico_fin = input("Digite o diagnostico final do paciente: ")
+    tratamento = input("Digite o tratamento no qual o paciente será submetido: ")
+
+
+    comand = """
+            INSERT INTO internacao (data_int,num_lei, id_con, dias_perm, diag_ini, diag_fin, tratamento) VALUES
+            (%s, %s, %s, %s, %s, %s , %s)
+
+            """
+
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+    cur = con.cursor()
+    cur.execute(comand,
+                ((datetime.datetime.now(),),(num_leito,),(id_consulta,),(dias_perm,),(diagnostico_ini,),(diagnostico_fin,),(tratamento,),))
+    con.commit()
 
 def encontrar_funcionario():
     print("Você deseja buscar por:\n1- Nome\n2- CPF\n3- RG\n")
@@ -283,7 +323,9 @@ if __name__ == "__main__":
     #create_tables()
     #cadastrar_funcionario()
     #cadastrar_paciente()
-	menu()
+	#menu()
+    #cadastrar_consulta()
+    #cadastrar_internacao()
 
 
 
