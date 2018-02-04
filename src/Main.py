@@ -96,58 +96,58 @@ def create_tables():
             """
             ALTER TABLE paciente ADD
             FOREIGN KEY (ult_con) REFERENCES
-            consulta (id_con)
+            consulta (id_con) ON DELETE SET NULL ON UPDATE CASCADE
             """,
             """
             ALTER TABLE consulta ADD
             FOREIGN KEY (id_fun) REFERENCES
-            funcionario (id_fun)
+            funcionario (id_fun) ON DELETE SET NULL ON UPDATE CASCADE
             """,
             """
             ALTER TABLE consulta ADD
             FOREIGN KEY (id_pac) REFERENCES
-            paciente (id_pac)
+            paciente (id_pac) ON DELETE SET NULL ON UPDATE CASCADE
             """,
             """
             ALTER TABLE internacao ADD
             FOREIGN KEY (id_con) REFERENCES
-            consulta (id_con)
+            consulta (id_con) ON DELETE SET NULL ON UPDATE CASCADE
             """
             ,
             """
             ALTER TABLE cadastro ADD
             FOREIGN KEY (pront) REFERENCES
-            paciente (pront)
+            paciente (pront) ON DELETE SET NULL ON UPDATE CASCADE
             """,
             """
             ALTER TABLE cadastro ADD
             FOREIGN KEY (id_pac) REFERENCES
-            paciente (id_pac)
+            paciente (id_pac) ON DELETE SET NULL ON UPDATE CASCADE
             """,
             """
             ALTER TABLE cadastro ADD
             FOREIGN KEY (id_fun) REFERENCES
-            funcionario (id_fun)
+            funcionario (id_fun) ON DELETE SET NULL ON UPDATE CASCADE
             """,
             """
             ALTER TABLE cadastro ADD
             FOREIGN KEY (cpf_fun) REFERENCES
-            funcionario (cpf_fun)
+            funcionario (cpf_fun) ON DELETE SET NULL ON UPDATE CASCADE
             """,
             """
             ALTER TABLE agenda ADD
             FOREIGN KEY (id_fun) REFERENCES
-            funcionario (id_fun)
+            funcionario (id_fun) ON DELETE SET NULL ON UPDATE CASCADE
             """,
             """
             ALTER TABLE agenda ADD
             FOREIGN KEY (cpf_fun) REFERENCES
-            funcionario (cpf_fun)
+            funcionario (cpf_fun) ON DELETE SET NULL ON UPDATE CASCADE
             """,
             """
             ALTER TABLE agenda ADD
             FOREIGN KEY (id_con) REFERENCES
-            consulta (id_con)
+            consulta (id_con) ON DELETE SET NULL ON UPDATE CASCADE
             """
         )
 
@@ -299,6 +299,20 @@ def cadastrar_internacao():
                 ((datetime.datetime.now(),),(num_leito,),(id_consulta,),(dias_perm,),(diagnostico_ini,),(diagnostico_fin,),(tratamento,),))
     con.commit()
 
+def deletar_funcionario():
+    id_funcionario = input ("Digite o ID do funcionário que você deseja deletar: ")
+
+    comand = """
+            DELETE  FROM funcionario WHERE id_fun = (%s)
+        """
+
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+    cur = con.cursor()
+    cur.execute(comand,
+                ((id_funcionario),))
+    con.commit()
+
+
 def encontrar_funcionario():
     print("Você deseja buscar por:\n1- Nome\n2- CPF\n3- RG\n")
     comand = """SELECT * FROM funcionario;"""
@@ -320,12 +334,13 @@ def menu():
         encontrar_funcionario()
 
 if __name__ == "__main__":
-    #create_tables()
-    #cadastrar_funcionario()
+    create_tables()
+    cadastrar_funcionario()
     #cadastrar_paciente()
 	#menu()
     #cadastrar_consulta()
     #cadastrar_internacao()
+    deletar_funcionario()
 
 
 
