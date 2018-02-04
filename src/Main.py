@@ -21,6 +21,7 @@ def create_tables():
                 end_cidade_pac VARCHAR(255) NOT NULL,
                 end_cep_pac VARCHAR(11) NOT NULL,
                 end_uf_pac VARCHAR(2) NOT NULL,
+                end_comp_pac VARCHAR,
                 tel1_pac VARCHAR(15) NOT NULL,
                 tel2_pac VARCHAR(15),
                 email_pac VARCHAR(100) NOT NULL,
@@ -150,7 +151,7 @@ def create_tables():
             """
         )
 
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
         cur = con.cursor()
         for c in commands:
             cur.execute(c)
@@ -178,6 +179,12 @@ def exibir_funcionario(pessoas):
         print("Telefone: " + str(pessoa[15]))
         print("=================================\n")
 
+def exibir_relatorio(dados):
+    for dado in dados:
+        print("ID do Funcionário: " +str(dado[0]),"Nome do Funcionário: "+str(dado[1]),"ID do Paciente: " +str(dado[2]),"Nome do Paciente:" +str(dado[3]))
+        #print("Nome do Funcionário: "+str(dado[1]))
+        #print("ID do Paciente: " +str(dado[2]))
+        #print("Nome do Paciente:" +str(dado[3]))
 
 
 def cadastrar_funcionario():
@@ -224,7 +231,7 @@ def cadastrar_funcionario():
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);                
                 """
 
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
         cur = con.cursor()
         cur.execute(comand, (cpf, rg, crm, cargo, cofen, nome, horasplatao, logradouro, numero,
                              bairro, cidade, cep, uf, complemento, tel1, tel2,))
@@ -299,7 +306,7 @@ def encontrar_funcionario():
             else:
                 comand = """SELECT * FROM funcionario WHERE cargo = 'secretário'"""
 
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
         cur = con.cursor()
         cur.execute(comand, (valor,))
         r = cur.fetchall()
@@ -350,6 +357,21 @@ def cadastrar_internacao():
                 ((datetime.datetime.now(),),(num_leito,),(id_consulta,),(dias_perm,),(diagnostico_ini,),(diagnostico_fin,),(tratamento,),))
     con.commit()
 
+def consultar_funcionarioXpaciente():
+    comand = """ 
+            SELECT f.id_fun ,nome_fuc, p.id_pac,nome_pac
+            FROM funcionario f ,paciente p ,consulta c
+            WHERE f.id_fun = c.id_fun and p.id_pac = c.id_pac
+    """
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+    cur = con.cursor()
+    cur.execute(comand)
+    r = cur.fetchall()
+    cur.close()
+    exibir_relatorio(r)
+
+    con.commit()
+
 
 def deletar_funcionario():
     id_funcionario = input ("Digite o ID do funcionário que você deseja deletar: ")
@@ -377,8 +399,9 @@ def menu():
 
 
 if __name__ == "__main__":
-    # create_tables()
-    # cadastrar_funcionario()
+    #create_tables()
+    #cadastrar_funcionario()
     # encontrar_funcionario()
-    menu()
-
+    #menu()
+    #cadastrar_consulta()
+    consultar_funcionarioXpaciente()
