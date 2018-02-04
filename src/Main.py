@@ -179,6 +179,28 @@ def exibir_funcionario(pessoas):
         print("Telefone: " + str(pessoa[15]))
         print("=================================\n")
 
+def exibir_paciente(pessoas):
+    for pessoa in pessoas:
+        print("=================================")
+        print("Nome: " + pessoa[1])
+        print("CPF: " + str(pessoa[4]))
+        print("RG: " + str(pessoa[5]))
+        print("Sexo: " + pessoa[2])
+        print("Boletim: " + pessoa[16])
+        print("Prescrições: " + pessoa[17])
+        print("Fixas anestésicas: " + pessoa[18])
+        print("Descriçoẽs cirurgicas: " + pessoa[19])
+        print("Observação: " + pessoa[20])
+        print("Procedimento: " + pessoa[21])
+        print("Prontuaŕio: " + str(pessoa[22]))
+        print("Email: " + pessoa[15])
+        print("Telefone: " + str(pessoa[13]))
+        print("Endereço: " + pessoa[6] + ", N " + str(pessoa[7]) + ", barrio " + pessoa[8])
+        print("Cidade: " + pessoa[9] + ", UF: " + pessoa[10])
+        print("Telefone: " + str(pessoa[15]))
+        print("=================================\n")
+
+
 def exibir_relatorio(dados):
     for dado in dados:
         print("ID do Funcionário: " +str(dado[0]),"Nome do Funcionário: "+str(dado[1]),"ID do Paciente: " +str(dado[2]),"Nome do Paciente:" +str(dado[3]))
@@ -316,6 +338,28 @@ def encontrar_funcionario():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
 
+def encontrar_paciente():
+    try:
+        print("Você deseja buscar por:\n1- Nome\n2- CPF\n")
+        opcao = input()
+        if opcao is "1":
+            valor = input("Digite o nome: ")
+            comand = """SELECT * FROM paciente WHERE nome_pac = (%s)"""
+        else:
+            valor = input("Digite o cpf: ")
+            comand = """SELECT * FROM paciente WHERE cpf_pac = (%s)"""
+
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        cur = con.cursor()
+        cur.execute(comand, (valor,))
+        r = cur.fetchall()
+        cur.close()
+        exibir_paciente(r)
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+
+
 
 def cadastrar_consulta():
     id_paciente = input("Digite o ID do paciente: ")
@@ -388,14 +432,19 @@ def deletar_funcionario():
 
 
 def menu():
-    print("Você deseja:\n1 - Cadastrar paciênte\n2 - Cadastrar funcionário\n3 - Buscar funcionário")
+    print("Você deseja:\n1 - Cadastrar paciênte\n2 - Cadastrar funcionário\n3 - Buscar funcionário\n"
+          "4 - Buscar paciênte\n5 - Sair")
     opcao = input()
     if opcao is "1":
         cadastrar_paciente()
     elif opcao is "2":
         cadastrar_funcionario()
-    else:
+    elif opcao is "3":
         encontrar_funcionario()
+    elif opcao is "4":
+        encontrar_paciente()
+    else:
+        print("============================")
 
 
 if __name__ == "__main__":
