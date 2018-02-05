@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import psycopg2
 import datetime
-import os
 
 
 def create_tables():
@@ -13,8 +12,8 @@ def create_tables():
                 nome_pac VARCHAR(255) NOT NULL,
                 sexo_pac CHAR NOT NULL,
                 tipo_sag VARCHAR(2) NOT NULL,
-                cpf_pac INTEGER NOT NULL,
-                rg_pac INTEGER NOT NULL,
+                cpf_pac VARCHAR(10) NOT NULL,
+                rg_pac VARCHAR(10) NULL,
                 end_log_pac VARCHAR(255) NOT NULL,
                 end_num_pac INTEGER NOT NULL,
                 end_bairro_pac VARCHAR(255) NOT NULL,
@@ -61,18 +60,18 @@ def create_tables():
             CREATE TABLE agenda (
                 id_con INTEGER UNIQUE,
                 id_fun INTEGER UNIQUE,
-                cpf_fun INTEGER UNIQUE 
+                cpf_fun VARCHAR(10) UNIQUE 
             );
             """,
             """
             CREATE TABLE funcionario (
                 id_fun SERIAL PRIMARY KEY UNIQUE,
-                cpf_fun INTEGER NOT NULL UNIQUE,
-                rg_fun INTEGER NOT NULL,
+                cpf_fun VARCHAR(10) NOT NULL UNIQUE,
+                rg_fun VARCHAR(10) NOT NULL,
                 crm INTEGER,
                 cargo VARCHAR(15), 
                 cofen INTEGER,
-                nome_fuc VARCHAR NOT NULL,
+                nome_fun VARCHAR NOT NULL,
                 hora_plant INTEGER NOT NULL,
                 end_log_fun VARCHAR(255) NOT NULL,
                 end_num_fun INTEGER NOT NULL,
@@ -89,7 +88,7 @@ def create_tables():
             CREATE TABLE cadastro (
                 id_pac INTEGER UNIQUE,
                 pront INTEGER UNIQUE,
-                cpf_fun INTEGER UNIQUE,
+                cpf_fun VARCHAR(10) UNIQUE,
                 id_fun INTEGER UNIQUE
             );
             """,
@@ -165,7 +164,7 @@ def create_tables():
 def exibir_funcionario(pessoas):
     for pessoa in pessoas:
         print("=================================")
-        print("Nome: " + pessoa[6])
+        print("Nome: " +pessoa[6])
         print("Cargo: " + pessoa[4])
         print("CPF: " + str(pessoa[1]))
         print("RG: " + str(pessoa[2]))
@@ -174,10 +173,11 @@ def exibir_funcionario(pessoas):
         if (pessoa[4] == "enfermeiro"):
             print("COFEN: " + str(pessoa[5]))
         print("Horas de plantão: " + str(pessoa[7]) + " HR")
-        print("Endereço: " + pessoa[8] + ", N " + str(pessoa[9]) + ", barrio " + pessoa[10])
+        print("Endereço: " + pessoa[8] + ", N " + str(pessoa[9]) + ", bairro " + pessoa[10])
         print("Cidade: " + pessoa[11] + ", UF: " + pessoa[13])
         print("Telefone: " + str(pessoa[15]))
         print("=================================\n")
+
 
 def exibir_paciente(pessoas):
     for pessoa in pessoas:
@@ -195,7 +195,7 @@ def exibir_paciente(pessoas):
         print("Prontuaŕio: " + str(pessoa[22]))
         print("Email: " + pessoa[15])
         print("Telefone: " + str(pessoa[13]))
-        print("Endereço: " + pessoa[6] + ", N " + str(pessoa[7]) + ", barrio " + pessoa[8])
+        print("Endereço: " + pessoa[6] + ", N " + str(pessoa[7]) + ", bairro " + pessoa[8])
         print("Cidade: " + pessoa[9] + ", UF: " + pessoa[10])
         print("Telefone: " + str(pessoa[15]))
         print("=================================\n")
@@ -204,9 +204,6 @@ def exibir_paciente(pessoas):
 def exibir_relatorio(dados):
     for dado in dados:
         print("ID do Funcionário: " +str(dado[0]),"Nome do Funcionário: "+str(dado[1]),"ID do Paciente: " +str(dado[2]),"Nome do Paciente:" +str(dado[3]))
-        #print("Nome do Funcionário: "+str(dado[1]))
-        #print("ID do Paciente: " +str(dado[2]))
-        #print("Nome do Paciente:" +str(dado[3]))
 
 
 def cadastrar_funcionario():
@@ -247,7 +244,7 @@ def cadastrar_funcionario():
 
         comand = """
                 INSERT INTO funcionario (cpf_fun, rg_fun, crm, cargo, cofen,
-                    nome_fuc, hora_plant, end_log_fun, end_num_fun,
+                    nome_fun, hora_plant, end_log_fun, end_num_fun,
                     end_bairro_fun, end_cidade_fun, end_cep_fun, end_uf_fun,
                     end_comp, tel1_fun, tel2_fun) VALUES (%s, %s, %s, %s, %s,
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);                
@@ -258,6 +255,7 @@ def cadastrar_funcionario():
         cur.execute(comand, (cpf, rg, crm, cargo, cofen, nome, horasplatao, logradouro, numero,
                              bairro, cidade, cep, uf, complemento, tel1, tel2,))
         con.commit()
+        print("\n#Funcionário cadastrado com sucesso!\n")
         menu()
 
     except (Exception, psycopg2.DatabaseError) as error:
@@ -286,7 +284,6 @@ def cadastrar_paciente():
     cep = input("Digite o cep: ")
     uf = input("Digite o estado: ")
     complemeto = input("Digite o complemento (opcional): ")
-    ultima_consulta = input ("Digite o número da última consulta realizada por este paciente: ")
 
     try:
         comand = """
@@ -302,6 +299,8 @@ def cadastrar_paciente():
         cur.execute(comand, ((nome,), (sexo,), (tipo_sanquineo,), (cpf,), (rg,), (logradouro,), (numero,), (bairro,), (cidade,),
                          (cep,), (uf,),(complemeto,),(tel1,), (tel2,), (email,), (boletim_medico,), (prescricoes_medicas,),(fichas_anestesicas,),(descricoes_cirurgicas,),(observacoes,),(procedimentos,),))
         con.commit()
+        print("\n#Paciente cadastrado com sucesso!\n")
+        menu()
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -314,7 +313,7 @@ def encontrar_funcionario():
         opcao = input()
         if opcao is "1":
             valor = input("Digite o nome: ")
-            comand = """SELECT * FROM funcionario WHERE nome_fuc = (%s)"""
+            comand = """SELECT * FROM funcionario WHERE nome_fun = (%s)"""
         elif opcao is "2":
             valor = input("Digite o cpf: ")
             comand = """SELECT * FROM funcionario WHERE cpf_fun = (%s)"""
@@ -333,7 +332,13 @@ def encontrar_funcionario():
         cur.execute(comand, (valor,))
         r = cur.fetchall()
         cur.close()
-        exibir_funcionario(r)
+        if len(r)==0:
+            print("\n#Funcionário não encontrado!\n")
+            menu()
+        else:
+            exibir_funcionario(r)
+            menu()
+
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -349,12 +354,18 @@ def encontrar_paciente():
             valor = input("Digite o cpf: ")
             comand = """SELECT * FROM paciente WHERE cpf_pac = (%s)"""
 
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
         cur = con.cursor()
         cur.execute(comand, (valor,))
         r = cur.fetchall()
         cur.close()
-        exibir_paciente(r)
+        if len(r)==0:
+            print("\n#Paciente não encontrado!\n")
+            menu()
+        else:
+            exibir_paciente(r)
+            menu()
+
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -380,6 +391,7 @@ def cadastrar_consulta():
     con.commit()
 
 
+
 def cadastrar_internacao():
     num_leito = input("Digite o número do leito: ")
     id_consulta = input("Digite o ID da cosulta: ")
@@ -403,7 +415,7 @@ def cadastrar_internacao():
 
 def consultar_funcionarioXpaciente():
     comand = """ 
-            SELECT f.id_fun ,nome_fuc, p.id_pac,nome_pac
+            SELECT f.id_fun ,nome_fun, p.id_pac,nome_pac
             FROM funcionario f ,paciente p ,consulta c
             WHERE f.id_fun = c.id_fun and p.id_pac = c.id_pac
     """
@@ -418,22 +430,53 @@ def consultar_funcionarioXpaciente():
 
 
 def deletar_funcionario():
-    id_funcionario = input ("Digite o ID do funcionário que você deseja deletar: ")
+    cpf = input ("Digite o CPF do funcionário que você deseja deletar: ")
 
     comand = """
-            DELETE  FROM funcionario WHERE id_fun = (%s)
+            DELETE  FROM funcionario WHERE cpf_fun = (%s)
         """
 
     con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
     cur = con.cursor()
     cur.execute(comand,
-                ((id_funcionario),))
+                ((cpf),))
     con.commit()
+    print("O funcionário de cpf "+str(cpf)+"foi deletado com sucesso!\n")
+    menu()
+
+def atualizar_funcionario():
+    cpf = input("Digite o cpf do funcionário: ")
+    comand = """
+            SELECT * FROM funcionario WHERE cpf_fun = (%s)
+        """
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+    cur = con.cursor()
+    cur.execute(comand,
+                ((cpf),))
+    r=cur.fetchone()
+    cur.close()
+    exibir_funcionario(r)
+
+    valor = input("Deseja atualizar este funcionário (S/N)? ")
+    if valor is "S":
+        nome = input ("Digite um novo nome para o funcionário: ")
+        comand = """
+                    UPDATE funcionario
+                    SET nome_fun = (%s)
+                    WHERE nome_fun = (%s)
+                    """
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+        cur = con.cursor()
+        cur.execute(comand,
+                    ((nome),(r[6]),))
+        con.commit()
+    else:
+        menu()
 
 
 def menu():
     print("Você deseja:\n1 - Cadastrar paciênte\n2 - Cadastrar funcionário\n3 - Buscar funcionário\n"
-          "4 - Buscar paciênte\n5 - Sair")
+          "4 - Buscar paciênte\n5 - Deletar Funcionário\n6- Sair")
     opcao = input()
     if opcao is "1":
         cadastrar_paciente()
@@ -443,6 +486,8 @@ def menu():
         encontrar_funcionario()
     elif opcao is "4":
         encontrar_paciente()
+    elif opcao is "5":
+        deletar_funcionario()
     else:
         print("============================")
 
@@ -453,4 +498,5 @@ if __name__ == "__main__":
     # encontrar_funcionario()
     #menu()
     #cadastrar_consulta()
-    consultar_funcionarioXpaciente()
+    #consultar_funcionarioXpaciente()
+    atualizar_funcionario()
