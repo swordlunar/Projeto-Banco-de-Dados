@@ -301,6 +301,45 @@ def cadastrar_paciente():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
 
+<<<<<<< HEAD
+=======
+
+def exibir_internados(internado):
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+    cur = con.cursor()
+    comando = """SELECT nome_pac FROM paciente WHERE id_pac = (SELECT id_pac FROM consulta WHERE id_con = (%s))"""
+    print("=================================")
+    cur.execute(comando, (internado[0][4],))
+    print("Internado: " + str(cur.fetchone()[0]))
+    print("Data de entrada: " + str(internado[0][1]))
+    print("Dias para saída: " + str(internado[0][2]))
+    print("Leito: " + str(internado[0][3]))
+    print("Tratamento: " + internado[0][5])
+    print("Diagnostico inicial: " + internado[0][6])
+    print("Diagnostico final: " + internado[0][7])
+    print("=================================\n")        
+
+
+def exibir_consultas(consultas):
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+    cur = con.cursor()
+    comando_pac = """SELECT nome_pac FROM paciente WHERE id_pac = (%s)"""
+    comando_fun = """SELECT nome_fuc FROM funcionario WHERE id_fun = (%s)"""
+
+    for consulta in consultas:
+        print("=================================")
+        print("Código da consulta: " + str(consulta[0]))
+        cur.execute(comando_pac, (consulta[1],))
+        print("Nome do paciênte: " + str(cur.fetchone()[0]))
+        cur.execute(comando_fun, (consulta[2],))
+        print("Médico: " + str(cur.fetchone()[0]))
+        print("Data: " + str(consulta[3]))
+        print("Sintomas: " + consulta[4])
+        print("Diagnostico: " + consulta[5])
+        print("=================================\n")
+
+
+>>>>>>> 6ced7959b8a4eb01410e8c03d49c33724c4f45a3
 def encontrar_funcionario():
     try:
         print("Você deseja buscar por:\n1- Nome\n2- CPF\n3- Cargo\n")
@@ -364,6 +403,40 @@ def encontrar_paciente():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
 
+<<<<<<< HEAD
+=======
+def encontrar_consulta():
+    try:
+        valor = input("Digite o CPF do paciênte: ")
+        comand = """SELECT * FROM consulta WHERE id_pac = (SELECT id_pac FROM paciente WHERE cpf_pac = (%s))"""
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        cur = con.cursor()
+        cur.execute(comand, (valor,))
+        r = cur.fetchall()
+        cur.close()
+        exibir_consultas(r)
+        menu()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+
+
+def encontrar_internacao():
+    try:
+        valor = input("Digite o CPF do paciênte: ")
+        comand = """SELECT * FROM internacao WHERE id_con = (SELECT id_con FROM consulta WHERE 
+                    id_pac = (SELECT id_pac FROM paciente WHERE cpf_pac = (%s)))"""
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
+        cur = con.cursor()
+        cur.execute(comand, (valor,))
+        r = cur.fetchall()
+        cur.close()
+        exibir_internados(r)
+        menu()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+
+
+>>>>>>> 6ced7959b8a4eb01410e8c03d49c33724c4f45a3
 def cadastrar_consulta():
     id_paciente = input("Digite o ID do paciente: ")
     id_funcionario = input("Digite o seu ID: ")
@@ -381,6 +454,11 @@ def cadastrar_consulta():
     cur.execute(comand,
                 ((id_paciente,), (id_funcionario,), (datetime.datetime.now()), (sintomas,), (diagnostico,),))
     con.commit()
+<<<<<<< HEAD
+=======
+	menu()
+
+>>>>>>> 6ced7959b8a4eb01410e8c03d49c33724c4f45a3
 
 def cadastrar_internacao():
     num_leito = input("Digite o número do leito: ")
