@@ -205,7 +205,7 @@ def exibir_consultas(consultas):
     con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
     cur = con.cursor()
     comando_pac = """SELECT nome_pac FROM paciente WHERE id_pac = (%s)"""
-    comando_fun = """SELECT nome_fuc FROM funcionario WHERE id_fun = (%s)"""
+    comando_fun = """SELECT nome_fun FROM funcionario WHERE id_fun = (%s)"""
 
     for consulta in consultas:
         print("=================================")
@@ -356,12 +356,14 @@ def encontrar_funcionario():
             print("1- Médico\n2- Enfermeiro\n3- Secretário")
             opcao_cargo = input()
             if opcao_cargo is "1":
-                comand = """SELECT * FROM funcionario WHERE cargo = 'médico'"""
+                comand = """SELECT * FROM funcionario WHERE cargo = (%s)"""
+                valor="médico"
             elif opcao_cargo is "2":
-                comand = """SELECT * FROM funcionario WHERE cargo = 'enfermeiro'"""
+                comand = """SELECT * FROM funcionario WHERE cargo = (%s)'"""
+                valor="enfermeiro"
             else:
-                comand = """SELECT * FROM funcionario WHERE cargo = 'secretário'"""
-
+                comand = """SELECT * FROM funcionario WHERE cargo = (%s)"""
+                valor="secretário"
         con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
         cur = con.cursor()
         cur.execute(comand, (valor,))
@@ -478,6 +480,7 @@ def cadastrar_internacao():
     cur.execute(comand,
                 ((datetime.datetime.now(),),(num_leito,),(id_consulta,),(dias_perm,),(diagnostico_ini,),(diagnostico_fin,),(tratamento,),))
     con.commit()
+    menu()
 
 def consultar_funcionarioXpaciente():
     comand = """ 
@@ -532,6 +535,8 @@ def atualizar_internacao():
                      WHERE id_int = (%s)
                      """
             cur.execute(comand, ((leito,), (r[0][0],)))
+            con.commit()
+            menu()
         elif opcao_int == "2":
             diag_final = input("Diagnóstico final: ")
             comand = """
@@ -571,6 +576,8 @@ def atualizar_paciente():
                      cpf_pac = (%s), rg_pac = (%s) WHERE id_pac = (%s)
                      """
             cur.execute(comand, ((nome,), (sexo,),  (cpf,), (rg,), (r[0][0],)))
+            con.commit()
+            menu()
         elif opcao is "3":
             tel1 = input("Digite o telefone: ")
             tel2 = input("Digite outro telefone (opcional): ")
@@ -583,13 +590,16 @@ def atualizar_paciente():
             uf = input("Digite o estado: ")
             complemeto = input("Digite o complemento (opcional): ")
             comand = """
-                     UPDATE funcionario SET tel1_pac = (%s), tel2_pac = (%s),
+                     UPDATE paciente SET tel1_pac = (%s), tel2_pac = (%s),
                      email_pac = (%s), end_log_pac = (%s), end_num_pac = (%s), end_bairro_pac = (%s), 
-                     end_cidade_pac = (%s), end_cep_pac = (%s), end_uf_pac = (%s), end_comp_pac = (%s),
+                     end_cidade_pac = (%s), end_cep_pac = (%s), end_uf_pac = (%s), end_comp_pac = (%s)
                      WHERE id_pac = (%s)
                      """
             cur.execute(comand, ((tel1,), (tel2,), (email,), (logradouro,), (numero,), (bairro,), (cidade,), (cep,),
                                  (uf,), (complemeto,), (r[0][0],)))
+            print("Alterações realizadas com sucesso!!")
+            con.commit()
+            menu()
         elif opcao is "2":
             tipo_sanquineo = input("Digite o tipo sanquíneo do paciente: ")
             descricoes_cirurgicas = input("Digite as descrições cirurgicas do paciente: ")
@@ -599,9 +609,9 @@ def atualizar_paciente():
             boletim_medico = input("Digite o boletim médico do paciente: ")
             procedimentos = input("Digite os procedimentos a serem realizados no paciente: ")
             comand = """
-                     UPDATE funcionario SET tipo_sag = (%s), boletim = (%s), observacao = (%s),
+                     UPDATE paciente SET tipo_sag = (%s), boletim = (%s), observacao = (%s),
                      proce = (%s), fichas_ane = (%s), desc_cir = (%s), presc  = (%s)
-                     WHERE cpf_fuc = (%s)                     
+                     WHERE cpf_pac = (%s)                     
                      """
             cur.execute(comand, ((tipo_sanquineo,), (boletim_medico,), (observacoes,), (procedimentos,),
                                  (fichas_anestesicas,), (descricoes_cirurgicas), (prescricoes_medicas,),
@@ -616,7 +626,9 @@ def atualizar_paciente():
 def menu():
     print("============================")
     print("Você deseja:\n1 - Cadastrar paciênte\n2 - Cadastrar funcionário\n3 - Cadastrar consulta\n"
-          "4 - Buscar funcionário\n5 - Buscar paciênte\n1<>6 - Sair")
+          "4 - Cadastrar internação\n5 - Buscar funcionário\n6 - Buscar paciênte\n7 - Buscar internação\n"
+          "8 - Buscar consulta\n9 - Deletar funcionário\n10 - Atualizar "
+          "paciente\n11 - Atualizar funcionário\n12 - Atualizar consulta\n13 - Atualizar internação\n1<>14 - Sair")
     opcao = input()
     if opcao is "1":
         cadastrar_paciente()
@@ -625,9 +637,25 @@ def menu():
     elif opcao is "3":
         cadastrar_consulta()
     elif opcao is "4":
-        encontrar_funcionario()
+        cadastrar_internacao()
     elif opcao is "5":
+        encontrar_funcionario()
+    elif opcao is "6":
         encontrar_paciente()
+    elif opcao is "7":
+        encontrar_internacao()
+    elif opcao is "8":
+        encontrar_consulta()
+    elif opcao is "9":
+        deletar_funcionario()
+    elif opcao == "10":
+        atualizar_paciente()
+    elif opcao == "11":
+        atualizar_funcionario()
+    elif opcao == "12":
+        atualizar_consulta()
+    elif opcao == "13":
+        atualizar_internacao()
     else:
         print("============================")
 
@@ -638,7 +666,7 @@ def atualizar_funcionario():
     comand = """
             SELECT * FROM funcionario WHERE cpf_fun = (%s)
         """
-    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
     cur = con.cursor()
     cur.execute(comand,
                 ((cpf),))
@@ -664,7 +692,7 @@ def atualizar_funcionario():
                     SET nome_fun=(%s), rg_fun=(%s), cpf_fun=(%s),tel1_fun=(%s),tel2_fun=(%s),hora_plant=(%s) 
                     WHERE id_fun = (%s)
                     """
-            con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+            con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
             cur = con.cursor()
             cur.execute(comand,
                     ((nome),(rg),(cpf1),(tel1),(tel2),(hora_plantao),(r[0][0]),))
@@ -690,7 +718,7 @@ def atualizar_funcionario():
                                 SET cargo=(%s), crm=(%s),cofen=(%s) 
                                 WHERE id_fun = (%s)
                                 """
-            con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+            con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
             cur = con.cursor()
             cur.execute(comand,
                     ((cargo), (crm), (cofen),(r[0][0]),))
@@ -711,7 +739,7 @@ def atualizar_funcionario():
                                 end_uf_fun=(%s),end_cep_fun=(%s),end_comp=(%s) 
                                 WHERE id_fun = (%s)
                                 """
-            con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+            con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
             cur = con.cursor()
             cur.execute(comand,
                     ((rua), (numero), (bairro), (cidade), (uf), (cep),(complemento),(r[0][0]),))
@@ -726,7 +754,7 @@ def atualizar_consulta():
     comand = """
             SELECT * FROM consulta WHERE id_con = (%s)
     """
-    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
     cur = con.cursor()
     cur.execute(comand,
                 ((cod_consulta),))
@@ -740,14 +768,14 @@ def atualizar_consulta():
         sintomas = input ("Digite os novos sintomas: ")
         diagnostico = input ("Digite o novo diagnostico: ")
         comand = """
-            UPDATE FROM consulta
+            UPDATE consulta
             SET sint = (%s), diag = (%s)
             WHERE id_con = (%s)
         """
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="1234")
         cur = con.cursor()
         cur.execute(comand,
-                    ((sintomas), (diagnostico),(r[0][0]),))
+                    ((sintomas,), (diagnostico,),(r[0][0])))
         print("Atualização realizada com sucesso!\n")
         con.commit()
     else:
