@@ -13,7 +13,7 @@ def create_tables():
                 sexo_pac CHAR NOT NULL,
                 tipo_sag VARCHAR(2) NOT NULL,
                 cpf_pac VARCHAR(10) NOT NULL,
-                rg_pac VARCHAR(10) NULL,
+                rg_pac VARCHAR(10) NOT NULL,
                 end_log_pac VARCHAR(255) NOT NULL,
                 end_num_pac INTEGER NOT NULL,
                 end_bairro_pac VARCHAR(255) NOT NULL,
@@ -178,7 +178,6 @@ def exibir_funcionario(pessoas):
         print("Telefone: " + str(pessoa[15]))
         print("=================================\n")
 
-
 def exibir_paciente(pessoas):
     for pessoa in pessoas:
         print("=================================")
@@ -200,11 +199,9 @@ def exibir_paciente(pessoas):
         print("Telefone: " + str(pessoa[15]))
         print("=================================\n")
 
-
 def exibir_relatorio(dados):
     for dado in dados:
         print("ID do Funcionário: " +str(dado[0]),"Nome do Funcionário: "+str(dado[1]),"ID do Paciente: " +str(dado[2]),"Nome do Paciente:" +str(dado[3]))
-
 
 def cadastrar_funcionario():
     print("Escolha o cargo:\n1- Médico\n2- Enfermeiro\n3- Secretário")
@@ -261,7 +258,6 @@ def cadastrar_funcionario():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
 
-
 def cadastrar_paciente():
     nome = input("Digite o nome: ")
     rg = input("Digite o rg: ")
@@ -304,8 +300,6 @@ def cadastrar_paciente():
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-
-        
 
 def encontrar_funcionario():
     try:
@@ -370,8 +364,6 @@ def encontrar_paciente():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
 
-
-
 def cadastrar_consulta():
     id_paciente = input("Digite o ID do paciente: ")
     id_funcionario = input("Digite o seu ID: ")
@@ -389,8 +381,6 @@ def cadastrar_consulta():
     cur.execute(comand,
                 ((id_paciente,), (id_funcionario,), (datetime.datetime.now()), (sintomas,), (diagnostico,),))
     con.commit()
-
-
 
 def cadastrar_internacao():
     num_leito = input("Digite o número do leito: ")
@@ -428,7 +418,6 @@ def consultar_funcionarioXpaciente():
 
     con.commit()
 
-
 def deletar_funcionario():
     cpf = input ("Digite o CPF do funcionário que você deseja deletar: ")
 
@@ -445,6 +434,7 @@ def deletar_funcionario():
     menu()
 
 def atualizar_funcionario():
+
     cpf = input("Digite o cpf do funcionário: ")
     comand = """
             SELECT * FROM funcionario WHERE cpf_fun = (%s)
@@ -453,26 +443,118 @@ def atualizar_funcionario():
     cur = con.cursor()
     cur.execute(comand,
                 ((cpf),))
-    r=cur.fetchone()
+    r=cur.fetchall()
     cur.close()
     exibir_funcionario(r)
 
     valor = input("Deseja atualizar este funcionário (S/N)? ")
+
     if valor is "S":
-        nome = input ("Digite um novo nome para o funcionário: ")
-        comand = """
+        value = input("O que deseja atualizar?\n 1- Informações de pessoa física(Nome,RG,CPF,Tel1,Tel2,Carga Horária)."
+                     "\n 2- Cargo.\n 3- Endereço(Logradouro,Número,Bairro,Cidade,UF,CEP,Complemento.")
+
+        if value is "1":
+            nome = input("Digite o novo nome para o funcionário: ")
+            rg = input("Digite o novo RG do funcionário: ")
+            cpf1 = input("Digite o novo CPF do funcionário: ")
+            tel1 = input("Digite o novo Telefone do funcionário: ")
+            tel2 = input("Digite o novo Telefone2 do funcionário(opcional): ")
+            hora_plantao = input ("Digite a carga horaria do funcionário: ")
+            comand = """
                     UPDATE funcionario
-                    SET nome_fun = (%s)
-                    WHERE nome_fun = (%s)
+                    SET nome_fun=(%s), rg_fun=(%s), cpf_fun=(%s),tel1_fun=(%s),tel2_fun=(%s),hora_plant=(%s) 
+                    WHERE id_fun = (%s)
                     """
-        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
-        cur = con.cursor()
-        cur.execute(comand,
-                    ((nome),(r[6]),))
-        con.commit()
+            con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+            cur = con.cursor()
+            cur.execute(comand,
+                    ((nome),(rg),(cpf1),(tel1),(tel2),(hora_plantao),(r[0][0]),))
+            print("Atualização realizada com sucesso!\n")
+            con.commit()
+
+        if value is "2":
+            print("Escolha o cargo:\n1- Médico\n2- Enfermeiro\n3- Secretário")
+            opcao = input()
+            if opcao is "1":
+                cargo = "médico"
+            elif opcao is "2":
+                cargo = "enfermeiro"
+            else:
+                cargo = "secretário"
+            crm = cofen = None
+            if cargo is "médico":
+                crm = input("Digite o CRM (médico): ")
+            if cargo is "enfermeiro":
+                cofen = input("Digite o COFEN (enfermeiro): ")
+            comand = """
+                                UPDATE funcionario
+                                SET cargo=(%s), crm=(%s),cofen=(%s) 
+                                WHERE id_fun = (%s)
+                                """
+            con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+            cur = con.cursor()
+            cur.execute(comand,
+                    ((cargo), (crm), (cofen),(r[0][0]),))
+            print("Atualização realizada com sucesso!\n")
+            con.commit()
+
+        if value is "3":
+            rua = input("Digite o novo logradouro do funcionário: ")
+            numero = input("Digite o novo número do funcionário: ")
+            bairro = input("Digite o novo bairro do funcionário: ")
+            cidade = input("Digite a nova cidade do funcionário: ")
+            uf = input("Digite a nova UF do funcionário): ")
+            cep = input("Digite o novo CEP do funcionário: ")
+            complemento = input("Digite o novo complemento: ")
+            comand = """
+                                UPDATE funcionario
+                                SET end_log_fun=(%s), end_num_fun=(%s), end_bairro_fun=(%s),end_cidade_fun=(%s),
+                                end_uf_fun=(%s),end_cep_fun=(%s),end_comp=(%s) 
+                                WHERE id_fun = (%s)
+                                """
+            con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+            cur = con.cursor()
+            cur.execute(comand,
+                    ((rua), (numero), (bairro), (cidade), (uf), (cep),(complemento),(r[0][0]),))
+            print("Atualização realizada com sucesso!\n")
+            con.commit()
+
+
+
     else:
         menu()
 
+def atualizar_consulta():
+    cod_consulta = input ("Digite o codigo da cosulta que deseja atualiza: ")
+    comand = """
+            SELECT * FROM consulta WHERE id_con = (%s)
+    """
+    con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+    cur = con.cursor()
+    cur.execute(comand,
+                ((cod_consulta),))
+    r = cur.fetchall()
+    cur.close()
+    exibir_consulta()
+
+    valor = input("Deseja realmente atualizar esta consulta (S/N)? ")
+
+    if valor is "S":
+        sintomas = input ("Digite os novos sintomas: ")
+        diagnostico = input ("Digite o novo diagnostico: ")
+        comand = """
+            UPDATE FROM consulta
+            SET sint = (%s), diag = (%s)
+            WHERE id_con = (%s)
+        """
+        con = psycopg2.connect(host="localhost", database="sgh", user="postgres", password="postgres")
+        cur = con.cursor()
+        cur.execute(comand,
+                    ((sintomas), (diagnostico),(r[0][0]),))
+        print("Atualização realizada com sucesso!\n")
+        con.commit()
+    else:
+        menu()
 
 def menu():
     print("Você deseja:\n1 - Cadastrar paciênte\n2 - Cadastrar funcionário\n3 - Buscar funcionário\n"
